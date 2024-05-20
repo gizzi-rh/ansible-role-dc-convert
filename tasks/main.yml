@@ -1,15 +1,27 @@
 ---
 # tasks file for ansible-role-dc-convert
 
-- name: Get a list of all DeploymentConfigs from any namespace
-  kubernetes.core.k8s_info:
-    api_key: '{{ lookup("env", "K8S_AUTH_API_KEY") | default(k8s_api_key, true) }}'
-    host: '{{ lookup("env", "K8S_AUTH_HOST") | default(k8s_api_host, true) }}'
-    api_version: "apps.openshift.io/v1"
-    kind: DeploymentConfig
-    validate_certs: false
-  register: dc_list
+#- name: Get a list of all DeploymentConfigs from any namespace
+#  kubernetes.core.k8s_info:
+#    api_key: '{{ lookup("env", "K8S_AUTH_API_KEY") | default(k8s_api_key, true) }}'
+#    host: '{{ lookup("env", "K8S_AUTH_HOST") | default(k8s_api_host, true) }}'
+#    api_version: "apps.openshift.io/v1"
+#    kind: DeploymentConfig
+#    validate_certs: false
+#  register: dc_list
+
+- name: Find all files in directory
+  ansible.builtin.find:
+    paths: "{{ dc_files_path }}"
+    recurse: yes
+    patterns: '*.yaml'
+  register: dc_files_list
+
+- name: Create DeploymentConfig object list
+  set_fact:
+    deploymentconfigs: "{{ deploymentconfigs | default([]) + [lookup('ansible.builtin.file', item.path) | from_yaml ] }}"
+  loop: "{{ dc_files_list.files }}"
 
 - name: Convert All DeploymentConfigs
   include_tasks: convert.yml
-  with_items: "{{ dc_list.resources }}"
+  with_items: "{{ deploymentconfigs }}"

@@ -6,6 +6,11 @@
     buffer: "{{ item | to_nice_yaml | transform_deployment_config }}"
     filename: "{{ item.metadata.name }}_{{ item.metadata.namespace }}"
 
+- name: Create output dir
+  ansible.builtin.file:
+    path: "{{ yaml_save_dir }}"
+    state: directory
+
 - name: Create Deployment yaml for {{ item.metadata.name }} in namespace {{ item.metadata.namespace }}
   copy:
     dest: '{{ yaml_save_dir }}/{{ filename }}.yaml'

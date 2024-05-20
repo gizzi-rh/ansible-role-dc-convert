@@ -4,4 +4,6 @@
 k8s_api_key:
 k8s_api_host:
 
-yaml_save_dir: "~"
+yaml_save_dir: "./conversion/"
+
+dc_files_path: "dc/"
